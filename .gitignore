@@ -1,0 +1,168 @@
+/*****https://github.com/vvarte/Automatas-Celulares-de-una-dimension---Cellular-Automaton/wiki *****/
+
+
+/*** Automatas Celulares de una dimension - Cellular Automaton ***/
+/*** Autor: Francisco Javier Arteaga Garrido ***/
+
+
+/**** generalizando: EJEMPLO:
+ * Se pide teclear un numero binario de 79 cifras maximo (por ejemplo: 101110111110101) 
+ * Se pide el numero (decimal) de la regla que se quiere aplicar de (0 a 255): ejemplo 30.
+ * El programa depurará la entrada, conviertiendo a 0 cualquier caracter distinto de 1; y poniendo "ceros" por la izquierda.
+ * El programa calculará el numero binario del numero de la regla introducido: ejemplo: 30 se mostrará como 11110.
+ * El programa mostrará las 8 trasformaciones (ordenadas) que realiza la regla indicada. 
+ * A continuacion el programa mostrará las n ternas ordenadas en que se descompone el numero de entrada.
+ * A contunuación el programa mostrará las n transformaciones a que da lugar la regla al aplicarla sobre las ternas.
+ * ¡POR FIN! se acaba la parte puramente didactica y el programa muestra el "dibujo" que queríamos obtener.
+ y que hemos limitado a 70 lineas ****/
+
+ 
+#include "iostream"
+#include  "math.h"
+#include "stdio.h"
+using namespace std;
+
+int main()
+{
+int z,x,k,posic,iter=0;
+int nn2[50];
+nn2[0]=0;
+string origS; // numero binario de inicio 79 cifras "0" o "1"
+int n=0; // numero de regla (decimal, ejemplo 30)
+int anch=79; //ancho del espacio del grafico 
+int bn=0; // numero binario en que se transforma el numero de regla
+int cifr[anch];
+int tru[112]; //transformaciones que realiza la regla, los indices son SIEMPRE los valores binarios ordenados 000,001,010,011,100,101,110 y 111) y devuelve un 0 o un 1
+int ter[anch]; //ternas del numero binario de entrada (ordenadas empezando por las unidades: ocurrencia 0)
+int sal[anch]; //numero de salida, o sea resultado de aplicar la regla al numero de entrada, para cada iteración
+/*** Estas transformaciones vienen dadas por las cifras correlativas de la regla en binario, empezando por las unidades, ocurrencia 0 ***/
+char salidachar[anch];
+printf("Cellular Automaton -  Automatas Celulares de una dimension \n" );
+string entradaDepur;
+cout << "Teclee un numero binario de entrada (semilla) con maximo de 79 cifras: " << endl;
+cin >> origS;
+int tailleorig = origS.length();
+cout << "Long: " << tailleorig << endl;	
+
+for (int i=0;i<tailleorig;i++)
+{
+	string cifraStr = origS.substr(i, 1);
+	if (cifraStr == "0") 
+	{
+		 entradaDepur += cifraStr;
+		 cifr[tailleorig-i-1]=0;
+	}
+	if (cifraStr == "1") 
+	{
+		 entradaDepur += cifraStr;
+		 cifr[tailleorig-i-1]=1;
+	}
+	if (cifraStr != "1" && cifraStr != "0") 
+	{
+		 entradaDepur += "0";
+		 cifr[tailleorig-i-1]=0;
+	}
+}
+for (int i=tailleorig;i<anch;i++)  //completa espacios con ceros
+{
+	 entradaDepur += "0";
+	 cifr[i]=0;
+}
+cout << "El numero binario de entrada (semilla) depurado es: " << endl;
+for (int m=anch-1;m>=0;m--)
+{
+cout << cifr[m];
+}
+cout << endl;
+printf("Teclee el numero de regla que quiera aplicar, maximo 255: \n" );
+do
+{
+scanf("%d",&n);
+} while (n>255);
+
+for (x=0;x<20;x++)
+	{
+	nn2[x]=n%2;
+	n=n/2;
+	if(n==0)
+	break;
+	}
+for(z=x;z>=0;z--)
+	{
+	bn += (nn2[z] * pow(10,z)); 
+	}
+	printf("Regla en numero binario es : %d\n",bn);
+
+tru[0] = bn%10;
+tru[1] = bn%100 /10;;
+tru[10] = bn%1000/100;
+tru[11] = bn%10000/1000;
+tru[100] = bn%100000/10000; 
+tru[101] = bn%1000000/100000; 
+tru[110] = bn%10000000/1000000; 
+tru[111] = bn/10000000;
+
+for(iter=1;iter<=70;iter++)
+{
+for (posic=1;posic<anch;posic++)
+{
+	ter[posic] = cifr[posic-1]+cifr[posic]*10+cifr[posic+1]*100;
+}
+ter[anch-1] = cifr[anch-2]+cifr[anch-1]*10+cifr[0]*100;
+ter[0] = cifr[anch-1]+cifr[0]*10+cifr[1]*100;
+for (posic=0;posic<anch;posic++)
+{
+sal[posic] = tru[ter[posic]];
+}
+
+if (iter==1)
+{
+	printf("Las 8 transformaciones ordenadas de la regla indicada \n" );
+	printf("000 => %03d\n",tru[0]);
+	printf("001 => %03d\n",tru[1]);
+	printf("010 => %03d\n",tru[10]);
+	printf("011 => %03d\n",tru[11]);
+	printf("100 => %03d\n",tru[100]);
+	printf("101 => %03d\n",tru[101]);
+	printf("110 => %03d\n",tru[110]);
+	printf("111 => %03d\n",tru[111]);
+	printf("\n");
+
+	printf("Las n ternas ordenadas del numero binario de entrada \n" );
+	for (posic=0;posic<anch;posic++)
+	{
+	printf("%03d\n",ter[posic]);
+	}
+	printf("\n");
+
+	printf("Las n transformaciones ordenadas del numero binario de entrada al aplicar la regla indicada: \n" );
+	for (posic=0;posic<anch;posic++)
+	{
+	printf("%d\n",sal[posic]);
+	}
+	printf("\n");
+	
+	for(k=anch-1;k>=0;k--)	  // primera linea de iteracion
+	{
+		if (cifr[k] == 0)
+			salidachar[k] = ' ';
+		if (cifr[k] == 1)
+			salidachar[k] ='*';
+		cout << salidachar[k];
+	}
+	printf("\n");
+}
+
+for(k=anch-1;k>=0;k--)  // siguientes lineas de iteracion
+	{
+	if (sal[k] == 0)
+		salidachar[k] = ' ';
+	if (sal[k] == 1)
+		salidachar[k] ='*';
+	cout << salidachar[k];
+	cifr[k] = sal[k];
+	}
+	printf("\n");
+		
+}
+}
